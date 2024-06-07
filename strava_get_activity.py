@@ -1,6 +1,6 @@
 import time
 from stravalib.client import Client
-import numpy as np
+# import numpy as np
 import re
 from pathlib import Path
 import pickle
@@ -39,7 +39,7 @@ def get_code():
                                 "confirmation question here: ")
         print("\n")
         access_code_re = re.search("(?<=&code=).*?(?=&scope)", access_code_url)
-        if (access_code_re != None):
+        if (access_code_re is not None):
             access_code = access_code_re.group(0)
         i += 1
     print("Code found!\n")
@@ -148,7 +148,8 @@ def get_token2(client_id, client_secret, client_refresh, access_code, client):
                 last_token_request = pickle.load(file)
 
             time_gap = (60 * 60) * 4.9
-            if ((float(last_token_request) + time_gap) > (float(this_token_time))):
+            if ((float(last_token_request) + time_gap) >
+                    (float(this_token_time))):
 
                 if (access_token_package_path.exists()):
                     print("Found the access_token_package, let's read it\n")
@@ -163,7 +164,8 @@ def get_token2(client_id, client_secret, client_refresh, access_code, client):
                             }
                 else:
                     # then exchange code for token
-                    print("We can use the access code we already got earlier\n")
+                    print("We can use the access code we "
+                          "already got earlier\n")
                     token_response = client.exchange_code_for_token(
                         client_id=client_id,
                         client_secret=client_secret,
@@ -171,7 +173,8 @@ def get_token2(client_id, client_secret, client_refresh, access_code, client):
                     )
             else:
                 # refresh access token
-                print("The last access code is too old so we'll get a new one\n")
+                print("The last access code is too old, "
+                      "so we'll get a new one\n")
                 token_response = client.refresh_access_token(
                     client_id=client_id, client_secret=client_secret,
                     refresh_token=client_refresh
@@ -183,7 +186,7 @@ def get_token2(client_id, client_secret, client_refresh, access_code, client):
                 client_id=client_id,
                 client_secret=client_secret,
                 code=access_code
-        )
+            )
     print("Token retrieved\n")
 
     # if (this_token_time_path.exists()):
@@ -302,6 +305,8 @@ def main():
 
     for activity in activities:
         print(activity)
+
+    return activity
 
 
 
