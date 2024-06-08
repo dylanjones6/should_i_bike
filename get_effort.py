@@ -1,12 +1,14 @@
-import strava_get_activity
+import get_strava_activity
 import pandas as pd
 import numpy as np
 from pathlib import Path
 import datetime
 import pickle
+import os
+import regex as re
+import time
 
 # perc_exert stands for perceived exertion
-
 
 
 def series_getter(df, perc_exert, i_start):
@@ -39,29 +41,69 @@ def series_getter(df, perc_exert, i_start):
     return perc_exert
 
 
+def get_recent_path():
+    strava_path = Path("/Users/jonesdr/.strava/")
+    dir_list = os.listdir(strava_path)
+    print(dir_list)
+    time.sleep(3)
+    # match_list = re.findall(r"perc_exert_\d", dir_list)
+    match = re.compile(r"perc_exert_\d")
+    match_list = list(filter(match.search, dir_list))
+    print(match_list)
+    time.sleep(3)
+    if (match_list == []):
+        return None
+    if (len(match_list) == 1):
+        recent_file_name = match_list[0]
+    else:
+        # dates = re.findall(r"\d", match_list).group()
+        match = re.compile(r"\d{12}")
+        dates = list(filter(match.search, match_list))
+        print("Dates: ", dates)
+        dates = [int(i) for i in dates]
+        recent = max(dates)
+        print("Recent: ", recent)
+        # recent_file_name = re.search(r"perc_exert_" +
+        #                              re.escape(recent), dir_list).group()
+        match = re.compile(r"perc_exert_" + re.escape(recent))
+        recent_file_name = list(filter(match.search, dir_list))
+        print("recent_file_name: ", recent_file_name)
+
+    recent_file_path = strava_path + recent_file_name
+
+    return recent_file_path
+
+
 def main():
 
-    df = strava_get_activity.main()
+    get_recent_path()
 
-    nrows = df.shape[0]
-    print(nrows)
+    return # for testing!
 
-    date_today = datetime.datetime("%y%m%d%H%M%S")
+    df = get_strava_activity.main()
 
-    today_perc_exert_path = Path("/Users/jonesdr/"
-                                 ".strava/perc_exert_{!S}".format(date_today))
-    if (today_perc_exert_path.exists()):
+    # nrows = df.shape[0]
+    # print(nrows)
+
+    today_date = datetime.datetime("%y%m%d_%H%M%S")
+    today_date_str = str(today_date)
+
+    today_perc_exert_path = Path("/Users/jonesdr/.strava"
+                                 "/perc_exert_{!S}".format(today_date_str))
+    recent_perc_exert_path = get_recent_path()
+
+    if (recent_perc_exert_path is not None):
         # MAKE AN IF PATH TO CHECK IF THERE'S ALREADY A FILE TO JUST APPEND TO
         with open(today_perc_exert_path, "rb") as file:
             perc_exert = pickle.load(file)
 
         past_rows = perc_exert.size
         i = past_rows
-        series_getter(df, perc_exert, i)
+        perc_exert = series_getter(df, perc_exert, i)
 
     else:
         perc_exert = pd.Series()
-        series_getter(df, perc_exert, 0)
+        perc_exert = series_getter(df, perc_exert, 0)
 
 
 
