@@ -4,6 +4,7 @@ from retry_requests import retry
 import pandas as pd
 import numpy as np
 from geopy import Nominatim
+import strava_get_activity
 
 """
 class location:
@@ -16,6 +17,17 @@ class location:
     def print_name(self):
         print(self.name)
 """
+
+
+# class weather_moment:
+#     """Weather at a specific time (range?) and location (point)"""
+#     def __init__(
+#         self,
+#         lat: float,
+#         lon: float,
+#         time_range,
+#
+#         ):
 
 
 def auto_input(location_name):
@@ -112,14 +124,14 @@ def hourly_process(response):
 
     return hourly_dataframe
 
-
+"""
 def data_analysis():
 
-    
+
 
 
     return
-
+"""
 
 
 def main():

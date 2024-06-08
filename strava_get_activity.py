@@ -15,7 +15,7 @@ import pandas as pd
 def get_code():
     client = Client()
     client_id, client_secret, client_refresh = (
-        open("/Users/jonesdr/.stuff/dilly.secret").read().strip().split(","))
+        open("/Users/jonesdr/.strava/dilly.secret").read().strip().split(","))
 
     # print(client_id)
 
@@ -48,9 +48,9 @@ def get_code():
     time.sleep(3)
 
     with open(Path("/Users/jonesdr/"
-                   ".stuff/strava_client_obj.pkl"), "wb") as file:
+                   ".strava/strava_client_obj.pkl"), "wb") as file:
         pickle.dump(client, file)
-    access_code_path = Path("/Users/jonesdr/.stuff/strava_access_code.pkl")
+    access_code_path = Path("/Users/jonesdr/.strava/strava_access_code.pkl")
     with open(access_code_path, "wb") as file:
         pickle.dump(access_code, file)
 
@@ -92,8 +92,8 @@ def get_token(client_id, client_secret, client_refresh, access_code, client):
     strava_token_package = str(access_token) + "," + str(refresh_token) + ","\
         + str(expires_at)
 
-    token_package_path = Path("/Users/jonesdr/.stuff/strava_token_package.pkl")
-    # client_final_path = Path("/Users/jonesdr/.stuff/client_final.pkl")
+    token_package_path = Path("/Users/jonesdr/.strava/strava_token_package.pkl")
+    # client_final_path = Path("/Users/jonesdr/.strava/client_final.pkl")
 
     with open(token_package_path, "wb") as file:
         pickle.dump(strava_token_package, file)
@@ -114,11 +114,11 @@ def get_token2(client_id, client_secret, client_refresh, access_code, client):
     #     refresh_token = refresh_response["refresh_token"]
     #     expires_at = refresh_response["expires_at"] GOTTA REMEMBER TO CHANGE TO LAST
     this_token_time_path = Path("/Users/jonesdr/"
-                                ".stuff/this_token_time.pkl")
+                                ".strava/this_token_time.pkl")
     last_token_time_path = Path("/Users/jonesdr/"
-                                ".stuff/last_token_time.pkl")
+                                ".strava/last_token_time.pkl")
     access_token_package_path = Path("/Users/jonesdr/"
-                                     ".stuff/strava_token_package.pkl")
+                                     ".strava/strava_token_package.pkl")
     this_token_time = str(time.time())
 
     # if (this_token_time_path.exists()):
@@ -213,8 +213,8 @@ def get_token2(client_id, client_secret, client_refresh, access_code, client):
     strava_token_package = str(access_token) + "," + str(refresh_token) + ","\
         + str(expires_at)
 
-    token_package_path = Path("/Users/jonesdr/.stuff/strava_token_package.pkl")
-    # client_final_path = Path("/Users/jonesdr/.stuff/client_final.pkl")
+    token_package_path = Path("/Users/jonesdr/.strava/strava_token_package.pkl")
+    # client_final_path = Path("/Users/jonesdr/.strava/client_final.pkl")
 
     with open(token_package_path, "wb") as file:
         pickle.dump(strava_token_package, file)
@@ -236,11 +236,11 @@ def get_token3(client_id, client_secret, client_refresh, access_code, client):
     #     refresh_token = refresh_response["refresh_token"]
     #     expires_at = refresh_response["expires_at"] GOTTA REMEMBER TO CHANGE TO LAST
     # this_token_time_path = Path("/Users/jonesdr/"
-    #                             ".stuff/this_token_time.pkl")
+    #                             ".strava/this_token_time.pkl")
     last_token_time_path = Path("/Users/jonesdr/"
-                                ".stuff/last_token_time.pkl")
+                                ".strava/last_token_time.pkl")
     access_token_package_path = Path("/Users/jonesdr/"
-                                     ".stuff/strava_token_package.pkl")
+                                     ".strava/strava_token_package.pkl")
     this_token_time = str(time.time())
 
     # if (this_token_time_path.exists()):
@@ -313,8 +313,8 @@ def get_token3(client_id, client_secret, client_refresh, access_code, client):
     strava_token_package = str(access_token) + "," + str(refresh_token) + ","\
         + str(expires_at)
 
-    token_package_path = Path("/Users/jonesdr/.stuff/strava_token_package.pkl")
-    # client_final_path = Path("/Users/jonesdr/.stuff/client_final.pkl")
+    token_package_path = Path("/Users/jonesdr/.strava/strava_token_package.pkl")
+    # client_final_path = Path("/Users/jonesdr/.strava/client_final.pkl")
 
     with open(token_package_path, "wb") as file:
         pickle.dump(strava_token_package, file)
@@ -349,7 +349,7 @@ def something(client):
 
 
 def get_secrets():
-    strava_secrets_path = Path("/Users/jonesdr/.stuff/dilly.secret")
+    strava_secrets_path = Path("/Users/jonesdr/.strava/dilly.secret")
     with open(strava_secrets_path) as file:
         client_id, client_secret, client_refresh = \
             file.read().strip().split(",")
@@ -361,8 +361,8 @@ def main():
 
     client_id, client_secret, client_refresh = get_secrets()
 
-    access_code_path = Path("/Users/jonesdr/.stuff/strava_access_code.pkl")
-    client_obj_path = Path("/Users/jonesdr/.stuff/strava_client_obj.pkl")
+    access_code_path = Path("/Users/jonesdr/.strava/strava_access_code.pkl")
+    client_obj_path = Path("/Users/jonesdr/.strava/strava_client_obj.pkl")
 
     if (not access_code_path.exists() or not client_obj_path.exists()):
         print("access_code not found or client_obj not found"
@@ -388,7 +388,7 @@ def main():
     access_token, refresh_token, expires_at, client = get_token3(
             client_id, client_secret, client_refresh, access_code, client)
     """
-    access_token_package_path = Path("/Users/jonesdr/.stuff/\
+    access_token_package_path = Path("/Users/jonesdr/.strava/\
                                      strava_token_package.pkl")
 
     if (not access_token_package_path.exists()):
