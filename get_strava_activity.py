@@ -431,6 +431,8 @@ def main():
 
     # ADD METHOD TO COLLECT DIFFICULTY RATINGS AND SAVE THEM IN A PICKLE FILE
 
+    # ADD TIME BETWEEN BIKES IN DF
+
     df = pd.DataFrame(data, columns=selected_vars)
     # print(df.suffer_score)
 

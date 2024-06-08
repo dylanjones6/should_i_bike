@@ -23,10 +23,16 @@ def series_getter(df, perc_exert, i_start):
 
         while (num_checked is None):
             col_name = df.loc[i, "name"]
-            print("Press \"q\" if you want to quit")
+            print("Press \"q\" if you want to quit, \"b\" to go back")
             num_in = input("What was the effort level from "
                            "0 to 9 (-1 if you didn't measure) "
                            "for:\n{!s}\n".format(col_name))
+            if (num_in == "b" and i != 0):
+                i -= 1
+                perc_exert.pop()
+                continue
+            elif (num_in == "b" and i == 0):
+                return pd.Series()
             if (num_in == "q"):
                 perc_exert = pd.Series(perc_exert)
                 return perc_exert
@@ -59,7 +65,7 @@ def get_recent_path():
     time.sleep(3)
     if (match_list == []):
         return None
-    if (len(match_list) == 1):
+    elif (len(match_list) == 1):
         recent_file_name = match_list[0]
     else:
         # dates = re.findall(r"\d", match_list).group()
@@ -97,7 +103,7 @@ def main():
     with open(df_path, "rb") as file:
         df = pickle.load(file)
 
-    # nrows = df.shape[0]
+    nrows = df.shape[0]
     # print(nrows)
 
     today_date = datetime.datetime.today().strftime("%y%m%d")
@@ -114,10 +120,36 @@ def main():
         # MAKE AN IF PATH TO CHECK IF THERE'S ALREADY A FILE TO JUST APPEND TO
         with open(recent_perc_exert_path, "rb") as file:
             perc_exert = pickle.load(file)
-
-        past_rows = perc_exert.size
-        i = past_rows
-        perc_exert = series_getter(df, perc_exert, i)
+        past_nrows = perc_exert.size
+        if (nrows == past_nrows):
+            # use_recent = False
+            # while (use_recent) ...
+            while (True):
+                use_recent = input("Past file found with all perceived "
+                                   "exertion ratings, want to use it? [y]/n\n")
+                use_recent = use_recent.lower()
+                if (use_recent == "y" or use_recent == "yes"
+                        or use_recent == ""):
+                    return 0  # exit code for no written file just using most
+                              # recent files
+                elif (use_recent == "n" or use_recent == "no"):
+                    while (True):
+                        response = input("Would you like to start a new file, "
+                                         "select a different file, start at a "
+                                         "certain point in this file, or go "
+                                         "back? n/s/c/b\n")
+                        response = response.lower()
+                        # if (response == "n"):
+                            # perc_exert = series_getter(df, pd.Dataseries(), 0)
+                            # break
+                            # refactor code for this, can't get out of nested
+                            # loops
+                        if (response == "b"):
+                            break
+                            
+        else:
+            i = past_nrows
+            perc_exert = series_getter(df, perc_exert, i)
 
     else:
         perc_exert = pd.Series()
@@ -125,8 +157,12 @@ def main():
     
     print(perc_exert)
 
+    # add check to remove extra perc_exert files based on contents
+
     with open(today_perc_exert_path, "wb") as file:
         pickle.dump(perc_exert, file)
+
+    return 1
 
 
 
