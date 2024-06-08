@@ -15,15 +15,21 @@ def series_getter(df, perc_exert, i_start):
 
     perc_exert = perc_exert.to_list()
     nrows = df.shape[0]
-    i = i_start
+    i = len(perc_exert)
+    # i = i_start
 
     while (i < nrows):
         num_checked = None
 
         while (num_checked is None):
             col_name = df.loc[i, "name"]
+            print("Press \"q\" if you want to quit")
             num_in = input("What was the effort level from "
-                           "0 to 9 for:\n{!s}\n".format(col_name))
+                           "0 to 9 (-1 if you didn't measure) "
+                           "for:\n{!s}\n".format(col_name))
+            if (num_in == "q"):
+                perc_exert = pd.Series(perc_exert)
+                return perc_exert
             num_in = int(num_in)
 
             if (num_in in range(-1, 10)):
@@ -57,44 +63,56 @@ def get_recent_path():
         recent_file_name = match_list[0]
     else:
         # dates = re.findall(r"\d", match_list).group()
-        match = re.compile(r"\d{12}")
-        dates = list(filter(match.search, match_list))
+        # match = re.compile(r"\d{6}_\d{6}")
+        # dates = list(filter(match.search, match_list))
+        dates = []
+        for i in match_list:
+            match = re.search(r"\d{6}_\d{6}$", i)
+            if (match is not None):
+                dates.append(match.group())
         print("Dates: ", dates)
-        dates = [int(i) for i in dates]
+        # dates = [int(i) for i in dates]
         recent = max(dates)
         print("Recent: ", recent)
         # recent_file_name = re.search(r"perc_exert_" +
         #                              re.escape(recent), dir_list).group()
         match = re.compile(r"perc_exert_" + re.escape(recent))
-        recent_file_name = list(filter(match.search, dir_list))
+        recent_file_name = list(filter(match.search, dir_list))[0]
+        # recent_file_name = re.search(r"perc_exert_" +
+        #                             re.escape(recent), dir_list).group()
         print("recent_file_name: ", recent_file_name)
 
-    recent_file_path = strava_path + recent_file_name
-
+    recent_file_path = str(strava_path) + "/" + recent_file_name
+    # print(recent_file_path)
     return recent_file_path
 
 
 def main():
 
-    get_recent_path()
+    recent_perc_exert_path = get_recent_path()
 
-    return # for testing!
-
-    df = get_strava_activity.main()
+    # df = get_strava_activity.main()
+    df_path = Path("/Users/jonesdr/.strava/strava_df")
+    # add a way to make this most recent as well
+    with open(df_path, "rb") as file:
+        df = pickle.load(file)
 
     # nrows = df.shape[0]
     # print(nrows)
 
-    today_date = datetime.datetime("%y%m%d_%H%M%S")
-    today_date_str = str(today_date)
+    today_date = datetime.datetime.today().strftime("%y%m%d")
+    today_time = datetime.datetime.today().strftime("%H%M%S")
+    today = today_date + "_" + today_time
+    today_date_str = str(today)
 
     today_perc_exert_path = Path("/Users/jonesdr/.strava"
-                                 "/perc_exert_{!S}".format(today_date_str))
+                                 "/perc_exert_" + today_date_str)
+    print(today_perc_exert_path)
     recent_perc_exert_path = get_recent_path()
 
     if (recent_perc_exert_path is not None):
         # MAKE AN IF PATH TO CHECK IF THERE'S ALREADY A FILE TO JUST APPEND TO
-        with open(today_perc_exert_path, "rb") as file:
+        with open(recent_perc_exert_path, "rb") as file:
             perc_exert = pickle.load(file)
 
         past_rows = perc_exert.size
@@ -104,8 +122,11 @@ def main():
     else:
         perc_exert = pd.Series()
         perc_exert = series_getter(df, perc_exert, 0)
+    
+    print(perc_exert)
 
-
+    with open(today_perc_exert_path, "wb") as file:
+        pickle.dump(perc_exert, file)
 
 
 

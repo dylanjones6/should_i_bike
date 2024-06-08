@@ -265,7 +265,7 @@ def get_token3(client_id, client_secret, client_refresh, access_code, client):
 
         time_gap = (60 * 60) * 5
         if (float(last_token_time) + time_gap > float(this_token_time)):
-            print("Our last token request was less than 5 hours ago so we'll"
+            print("Our last token request was less than 5 hours ago so we'll "
                   "use that\n")
             time.sleep(1)
             token_response = {"access_token": access_token,
@@ -432,7 +432,14 @@ def main():
     # ADD METHOD TO COLLECT DIFFICULTY RATINGS AND SAVE THEM IN A PICKLE FILE
 
     df = pd.DataFrame(data, columns=selected_vars)
-    print(df)
+    # print(df.suffer_score)
+
+    df_path = Path("/Users/jonesdr/.strava/strava_df")
+
+    # add date at end of path to search for most recent
+
+    with open(df_path, "wb") as file:
+        pickle.dump(df, file)
 
     return df
 
