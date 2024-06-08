@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 import pickle
 import os
+import pandas as pd
 
 # credit for this section due to
 # https://medium.com/analytics-vidhya/
@@ -130,7 +131,7 @@ def get_token2(client_id, client_secret, client_refresh, access_code, client):
         pickle.dump(this_token_time, file)
 
     if (access_token_package_path.exists()):
-
+        print("Found access_token_package!\n")
         with open(access_token_package_path, "rb") as file:
             access_token_package = pickle.load(file)
         access_token, refresh_token, expires_at = \
@@ -150,6 +151,7 @@ def get_token2(client_id, client_secret, client_refresh, access_code, client):
             time_gap = (60 * 60) * 4.9
             if ((float(last_token_request) + time_gap) >
                     (float(this_token_time))):
+                print("We can still use the past token\n")
 
                 if (access_token_package_path.exists()):
                     print("Found the access_token_package, let's read it\n")
@@ -199,6 +201,106 @@ def get_token2(client_id, client_secret, client_refresh, access_code, client):
         pickle.dump(this_token_time, file)
 
     os.remove(this_token_time_path)
+
+    access_token = token_response["access_token"]
+    refresh_token = token_response["refresh_token"]
+    expires_at = token_response["expires_at"]
+
+    client.access_token = access_token
+    client.refresh_token = refresh_token
+    client.token_expires_at = expires_at
+
+    strava_token_package = str(access_token) + "," + str(refresh_token) + ","\
+        + str(expires_at)
+
+    token_package_path = Path("/Users/jonesdr/.stuff/strava_token_package.pkl")
+    # client_final_path = Path("/Users/jonesdr/.stuff/client_final.pkl")
+
+    with open(token_package_path, "wb") as file:
+        pickle.dump(strava_token_package, file)
+
+    # with open(client_final_path, "wb") as file:
+    #     pickle.dump(client, file)
+
+    return access_token, refresh_token, expires_at, client
+
+
+def get_token3(client_id, client_secret, client_refresh, access_code, client):
+
+    # if time.time() > client.token_expires_at:
+    #     refresh_response = client.refresh_access_token(
+    #         client_id=client_id, client_secret=client_secret,
+    #         refresh_token=client_refresh
+    #     )
+    #     access_token = refresh_response["access_token"]
+    #     refresh_token = refresh_response["refresh_token"]
+    #     expires_at = refresh_response["expires_at"] GOTTA REMEMBER TO CHANGE TO LAST
+    # this_token_time_path = Path("/Users/jonesdr/"
+    #                             ".stuff/this_token_time.pkl")
+    last_token_time_path = Path("/Users/jonesdr/"
+                                ".stuff/last_token_time.pkl")
+    access_token_package_path = Path("/Users/jonesdr/"
+                                     ".stuff/strava_token_package.pkl")
+    this_token_time = str(time.time())
+
+    # if (this_token_time_path.exists()):
+    #     os.replace(this_token_time_path, this_token_time_path)
+    # else:
+    #     with open(this_token_time_path, "wb") as file:
+    #         pickle.dump(this_token_time, file)
+
+    # with open(this_token_time_path, "wb") as file:
+    #     pickle.dump(this_token_time, file)
+
+    if (access_token_package_path.exists() and last_token_time_path.exists()):
+        print("Found access_token_package and last_token_time\n")
+        time.sleep(1)
+        with open(last_token_time_path, "rb") as file:
+            last_token_time = pickle.load(file)
+
+        with open(access_token_package_path, "rb") as file:
+            package_raw = pickle.load(file)
+            access_token, refresh_token, expires_at = \
+                package_raw.strip().split(",")
+
+        time_gap = (60 * 60) * 5
+        if (float(last_token_time) + time_gap > float(this_token_time)):
+            print("Our last token request was less than 5 hours ago so we'll"
+                  "use that\n")
+            time.sleep(1)
+            token_response = {"access_token": access_token,
+                              "refresh_token": refresh_token,
+                              "expires_at": expires_at}
+        else:
+            print("Our last token is too old so we'll refresh it\n")
+            time.sleep(1)
+            token_response = client.refresh_access_token(
+                client_id=client_id,
+                client_secret=client_secret,
+                refresh_token=refresh_token)
+
+            # refresh token
+    else:
+        print("Getting a new token\n")
+        time.sleep(1)
+        token_response = client.exchange_code_for_token(
+            client_id=client_id,
+            client_secret=client_secret,
+            code=access_code)
+
+    print("Token retrieved\n")
+    time.sleep(1)
+
+    # if (this_token_time_path.exists()):
+    #     os.replace(last_token_time_path, last_token_time_path)
+    # else:
+    #     with open(last_token_time_path, "wb") as file:
+    #         pickle.dump(this_token_time, file)
+
+    with open(last_token_time_path, "wb") as file:
+        pickle.dump(this_token_time, file)
+
+    # os.remove(this_token_time_path)
 
     access_token = token_response["access_token"]
     refresh_token = token_response["refresh_token"]
@@ -283,7 +385,7 @@ def main():
     print(access_code)
     print(client)
 
-    access_token, refresh_token, expires_at, client = get_token2(
+    access_token, refresh_token, expires_at, client = get_token3(
             client_id, client_secret, client_refresh, access_code, client)
     """
     access_token_package_path = Path("/Users/jonesdr/.stuff/\
@@ -303,10 +405,36 @@ def main():
     """
     activities = client.get_activities()
 
+    selected_vars = [
+                    "name",
+                    "sport_type",
+                    "distance",
+                    "moving_time",
+                    "elapsed_time",
+                    "start_date",
+                    "total_elevation_gain",
+                    "start_latlng",
+                    "average_speed",
+                    "average_cadence",
+                    "average_watts",
+                    "weighted_average_watts",
+                    "calories",
+                    "kilojoules"
+                    ]
+    data = []
     for activity in activities:
-        print(activity)
+        # print(activity)
+        activity_dict = activity.to_dict()
+        data.append([activity.id] +
+                    [activity_dict.get(x) for x in selected_vars])
+    selected_vars.insert(0, "id")
 
-    return activity
+    # ADD METHOD TO COLLECT DIFFICULTY RATINGS AND SAVE THEM IN A PICKLE FILE
+
+    df = pd.DataFrame(data, columns=selected_vars)
+    print(df)
+
+    return df
 
 
 
